@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Processor</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        /* Upload area styling */
+        .upload-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+        }
+        #file-input {
+            display: none; /* Hide actual input */
+        }
+        .file-label {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-label:hover {
+            background-color: #2980b9;
+        }
+        #file-name {
+            margin-top: 10px;
+            font-style: italic;
+        }
+        #process-btn {
+            display: none;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #process-btn:hover {
+            background-color: #27ae60;
+        }
+        .results-container {
+            display: none;
+            margin-top: 30px;
+        }
+        /* Tab styling */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        /* Stats boxes */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            width: 30%;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        /* Loading spinner */
+        .loader {
+            display: none;
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text File Processor</h1>
+        
+        <div class="upload-section">
+            <input type="file" id="file-input" accept=".txt">
+            <label for="file-input" class="file-label">Choose Text File</label>
+            <div id="file-name"></div>
+            <button id="process-btn">Process File</button>
+            <div class="loader" id="loader"></div>
+        </div>
+        
+        <div class="results-container" id="results-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="processed">Processed Output</div>
+                <div class="tab" data-tab="original">Original Text</div>
+                <div class="tab" data-tab="stats">Statistics</div>
+                <div class="tab" data-tab="command">Command Output</div>
+            </div>
+            
+            <div class="tab-content active" id="processed-content">
+                <h2>Processed Text</h2>
+                <pre id="processed-output">Processing results will appear here...</pre>
+            </div>
+            
+            <div class="tab-content" id="original-content">
+                <h2>Original Text</h2>
+                <pre id="original-output">Original text will appear here...</pre>
+            </div>
+            
+            <div class="tab-content" id="stats-content">
+                <h2>Text Statistics</h2>
+                <div class="stats">
+                    <div class="stat-box">
+                        <div>Word Count</div>
+                        <div class="stat-value" id="word-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Character Count</div>
+                        <div class="stat-value" id="char-count">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="command-content">
+                <h3>Command Output</h2>
+                <label>Filter Log by RxCmd</label>
+                <input id="command_input" value="" placeholder="Enter value (e.g. 0x8a1) or leave blank for all"/>
+                <button id="process-command-btn">Filter</button>
+                <p>Showing Results: <span id="command_input_string"></span></p>
+                <pre id="command-output">Output will appear here...</pre>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Grab all the elements we need
+            const fileInput = document.getElementById('file-input');
+            const fileName = document.getElementById('file-name');
+            const processBtn = document.getElementById('process-btn');
+            const loader = document.getElementById('loader');
+            const resultsContainer = document.getElementById('results-container');
+            const originalOutput = document.getElementById('original-output');
+            const processedOutput = document.getElementById('processed-output');
+            const wordCount = document.getElementById('word-count');
+            const charCount = document.getElementById('char-count');
+            // command process button
+            const command_processBtn = document.getElementById('process-command-btn');
+            const commandOutput = document.getElementById('command-output');
+
+            
+            // File selection handler
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Show the selected filename
+                    fileName.textContent = `Selected file: ${file.name}`;
+                    processBtn.style.display = 'inline-block';
+                } else {
+                    fileName.textContent = '';
+                    processBtn.style.display = 'none';
+                }
+            });
+            
+            // Process button click handler
+            processBtn.addEventListener('click', function() {
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a file first.');
+                    return;
+                }
+                
+                // Show loading spinner
+                loader.style.display = 'block';
+                resultsContainer.style.display = 'none';
+                
+                // Create form data object for file upload
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Send to server
+                fetch('/process', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Server error');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide spinner
+                    loader.style.display = 'none';
+                    
+                    // Show results
+                    resultsContainer.style.display = 'block';
+                    originalOutput.textContent = data.original;
+                    processedOutput.textContent = data.processed.uppercase;
+                    wordCount.textContent = data.processed.word_count;
+                    charCount.textContent = data.processed.char_count;
+                })
+                .catch(error => {
+                    loader.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('Error processing file: ' + error);
+                });
+            });
+            
+            // Tab switching logic
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Deactivate all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Activate selected tab
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-content`).classList.add('active');
+                });
+            });
+
+
+
+             command_processBtn.addEventListener('click', function() {
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert('Please select a file first.');
+                    return;
+                }
+                
+                // Show loading spinner
+                loader.style.display = 'block';
+                resultsContainer.style.display = 'none';
+                
+                // Create form data object for file upload
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('command_input', document.getElementById("command_input").value);
+                
+                // Send to server
+                fetch('/command-process', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Server error');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide spinner
+                    loader.style.display = 'none';
+                    
+                    // Show results
+                    resultsContainer.style.display = 'block';
+                    const output = Array.isArray(data.command_output) && data.command_output.length > 0
+                    ? data.command_output
+                        .filter(inner => Array.isArray(inner) && inner.length > 0)
+                        .map(inner => inner.join(', '))
+                        .join('\n')
+                    : 'No Results';
+                    commandOutput.textContent =  output;
+                    document.getElementById("command_input_string").textContent = data.command_input;
+
+                })
+                .catch(error => {
+                    loader.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('Error processing file: ' + error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
