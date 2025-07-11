@@ -187,13 +187,15 @@
             </div>
 
             <div class="tab-content" id="command-content">
-                <h3>Command Output</h2>
+                <h3>Command Output</h3>
                 <label>Filter Log by RxCmd</label>
-                <input id="command_input" value="" placeholder="Enter value (e.g. 0x8a1) or leave blank for all"/>
+                <input id="command_input" value="" placeholder="Enter value (e.g. 0x8a1) or 'all'"/>
                 <button id="process-command-btn">Filter</button>
-                <p>Showing Results: <span id="command_input_string"></span></p>
-                <pre id="command-output">Output will appear here...</pre>
+                <a id="download-csv" style="display:none;" class="file-label">Download CSV</a>
+                <button id="export-gitlab" style="display:none;" class="file-label">Export to GitHub</button>
+                <div id="table-container" style="margin-top: 15px;"></div>
             </div>
+            
 
         </div>
     </div>
@@ -295,49 +297,32 @@
 
 
 
-             command_processBtn.addEventListener('click', function() {
+            command_processBtn.addEventListener('click', function() {
                 const file = fileInput.files[0];
-
                 if (!file) {
                     alert('Please select a file first.');
                     return;
                 }
-                
-                // Show loading spinner
+
                 loader.style.display = 'block';
                 resultsContainer.style.display = 'none';
-                
-                // Create form data object for file upload
+
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('command_input', document.getElementById("command_input").value);
-                
-                // Send to server
+                formData.append('command', document.getElementById("command_input").value || 'all');
+
                 fetch('/command-process', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Server error');
-                    }
+                    if (!response.ok) throw new Error('Server error');
                     return response.json();
                 })
                 .then(data => {
-                    // Hide spinner
                     loader.style.display = 'none';
-                    
-                    // Show results
                     resultsContainer.style.display = 'block';
-                    const output = Array.isArray(data.command_output) && data.command_output.length > 0
-                    ? data.command_output
-                        .filter(inner => Array.isArray(inner) && inner.length > 0)
-                        .map(inner => inner.join(', '))
-                        .join('\n')
-                    : 'No Results';
-                    commandOutput.textContent =  output;
-                    document.getElementById("command_input_string").textContent = data.command_input;
-
+                    displayTable(data.data);
                 })
                 .catch(error => {
                     loader.style.display = 'none';
@@ -345,6 +330,68 @@
                     alert('Error processing file: ' + error);
                 });
             });
+
+            function displayTable(data) {
+                const container = document.getElementById('table-container');
+                const downloadBtn = document.getElementById('download-csv');
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = "<p>No matching entries found.</p>";
+                    downloadBtn.style.display = 'none';
+                    return;
+                }
+
+                let html = "<table style='width:100%; border-collapse: collapse;'><tr><th>Line</th><th>RxCmd</th><th>SW</th><th>RT</th><th>Data After RtRt 0</th></tr>";
+                let csv = "Line,RxCmd,SW,RT,Data After RtRt 0\n";
+
+                data.forEach(row => {
+                    html += `<tr>
+                        <td>${row.line}</td>
+                        <td>${row.rxcmd}</td>
+                        <td>${row.sw}</td>
+                        <td>${row.rt}</td>
+                        <td>${row.data}</td>
+                    </tr>`;
+                    csv += `"${row.line}","${row.rxcmd}","${row.sw}","${row.rt}","${row.data}"\n`;
+                });
+                html += "</table>";
+
+                container.innerHTML = html;
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                downloadBtn.href = url;
+                downloadBtn.download = "structured_log_output.csv";
+                downloadBtn.style.display = "inline-block";
+                document.getElementById('export-gitlab').style.display = 'inline-block';
+            }
+            document.getElementById('export-gitlab').addEventListener('click', () => {
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a file first.');
+                    return;
+                }
+                const filter = document.getElementById('command_input').value || 'all';
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('filter', filter);
+
+                fetch('/export-to-gitlab', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Export failed: " + data.error);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => alert("Error: " + err));
+});
+
+
         });
     </script>
 </body>
