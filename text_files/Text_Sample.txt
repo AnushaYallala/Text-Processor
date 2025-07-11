@@ -1,0 +1,7 @@
+DB1kPtr 0xcc1b Ofst 0x3c0c0 Time 0x1e43 mtcnt=16 cnt=16 Wcnt 0x15 RxCmd: 0X855 SW: 0X800 RT 01 02 Z1 00 RtRt 0 064627 000001 000000
+DB1kPtr 0xcc31 Ofst 0x3c0c4 Time 0x1e46 mtcnt=17 lcnt=17 Wcnt 0x01 RxCmd: 0x8a1 SW : 0x800 RT 01 05 01 00 RtRt 0 020000
+DB1kPtr 0xcc54 Ofst 0x3c0cc Time 0x1f9a mtcnt=19 lcnt=19 Wcnt 0x01 RxCmd: 0x8a1 SW : 0x800 RT 01 05 01 00 RtRt 0 040000
+DB1kPtr 0xcc56 Ofst 0x3c0d0 Time 0x1fca mtcnt=20 lcnt=20 Wcnt 0x15 RxCmd: 0x855 SW: 0x800 RT 01 02 21 00 RtRt 0 064627 000001 000000
+DB1kPtr 0xcc6c Ofst 0x3c0d4 Time 0x1fcd mtcnt=21 lcnt=21 Wcnt 0x01 RxCmd: 0x8a1 SW: 0x800 RT 01 05 01 00 RtRt 0 020000
+DB1kPtr 0xcc6e Ofst 0x3c0d8 Time 0x20e8 mtcnt=22 lcnt=22 Wcnt 0x20 RxCmd: 0xc20 SW: 0x800 RT 01 01 00 01 RtRt 0 177777 000004 000000
+DB1kPtr 0xcc8f Ofst 0x3c0dc Time 0x2121 mtcnt=23 lcnt=23 Wcnt 0x01 RxCmd: 0x8a1 SW: 0x800 RT 01 05 01 00 RtRt 0 040000
