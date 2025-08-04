@@ -1,0 +1,2 @@
+Line,RxCmd,SW,RT,Data After RtRt 0
+6,0xc20,0x800,01 01 00 01,177777 000004 000000
